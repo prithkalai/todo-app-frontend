@@ -64,6 +64,7 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
 
   const handleCheckState = (id: string, isChecked: any) => {
     console.log(isChecked);
+
     const newState = isChecked ?? false;
 
     setCheckedStates((prevstates) => ({
@@ -73,7 +74,8 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
 
     apiClient
       .complete(id, newState)
-      .then(() => {
+      .then((res) => {
+        console.log(res);
         toast({
           title: "Success",
           description: "Task Completion Updated",
