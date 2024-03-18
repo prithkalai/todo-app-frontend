@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const AxiosInstance = axios.create({
-  baseURL: "http://localhost:3000/api/todos/",
+  baseURL: "https://todo-app-backend-wn4h.onrender.com/api/todos/",
 });
 
 class APIclient {
@@ -44,9 +44,12 @@ class APIclient {
   };
 
   userInfo = () => {
-    return AxiosInstance.get("http://localhost:3000/api/users/me", {
-      baseURL: "",
-    });
+    return AxiosInstance.get(
+      "https://todo-app-backend-wn4h.onrender.com/api/users/me",
+      {
+        baseURL: "",
+      }
+    );
   };
 }
 
