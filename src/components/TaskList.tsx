@@ -16,6 +16,7 @@ import { useToast } from "./ui/use-toast";
 import { Dispatch, SetStateAction, useState } from "react";
 import EditTaskForm from "./EditTaskForm";
 import ButtonLoading from "./ButtonLoading";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Props {
   todos: Todo[];
@@ -25,16 +26,30 @@ interface Props {
 
 const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [checkedStates, setCheckedStates] = useState<{
+    [key: string]: boolean;
+  }>({});
+
   const deleteTask = (id: string) => {
-    setLoading(true);
+    setDeleteLoading((prevStates) => ({ ...prevStates, [id]: true }));
     apiClient
       .delete(id)
       .then(() => {
         let newTodos = [...todos];
         newTodos = newTodos.filter((todo) => todo._id !== id);
         updateTodos(newTodos);
-        setLoading(false);
+        toast({
+          title: "Success",
+          description: "New task added.",
+        });
+        setDeleteLoading((prevStates) => {
+          const newStates = { ...prevStates };
+          delete newStates[id]; // or newStates[id] = false; if you prefer to keep the key
+          return newStates;
+        });
       })
       .catch((err) => {
         toast({
@@ -42,9 +57,41 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
           title: err.response ? err.response.data : err.message,
           description: err.response ? err.message : "Server Not Reachable",
         });
-        setLoading(false);
+        setDeleteLoading((prevStates) => ({ ...prevStates, [id]: false }));
       });
     console.log(id);
+  };
+
+  const handleCheckState = (id: string, isChecked: any) => {
+    console.log(isChecked);
+    const newState = isChecked ?? false;
+
+    setCheckedStates((prevstates) => ({
+      ...prevstates,
+      [id]: newState,
+    }));
+
+    apiClient
+      .complete(id, newState)
+      .then(() => {
+        toast({
+          title: "Success",
+          description: "Task Completion Updated",
+        });
+      })
+      .catch((err) => {
+        toast({
+          variant: "destructive",
+          title: err.response ? err.response.data : err.message,
+          description: err.response ? err.message : "Server Not Reachable",
+        });
+        setCheckedStates((prevstates) => ({
+          ...prevstates,
+          [id]: !newState,
+        }));
+      });
+
+    // Move checked states to the bottom
   };
 
   return (
@@ -60,7 +107,21 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
           <TableBody>
             {todos.map((todo) => (
               <TableRow key={todo._id}>
-                <TableCell className="text-md  min-[460px]:text-xl font-poppins">
+                <TableCell>
+                  <Checkbox
+                    checked={!!checkedStates[todo._id]}
+                    onCheckedChange={(isChecked) =>
+                      handleCheckState(todo._id, isChecked)
+                    }
+                  />
+                </TableCell>
+                <TableCell
+                  className={
+                    !checkedStates[todo._id]
+                      ? "text-md  min-[460px]:text-xl font-poppins"
+                      : "text-md  min-[460px]:text-xl font-poppins line-through"
+                  }
+                >
                   {todo.data}
                 </TableCell>
                 <TableCell className="text-right">
@@ -78,7 +139,7 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
                         <EditTaskForm id={todo._id} updateTodos={editTodos} />
                       </PopoverContent>
                     </Popover>
-                    {!loading ? (
+                    {!deleteLoading[todo._id] ? (
                       <Button className="p-2 min-[460px]:p-3" variant="outline">
                         <RxTrash
                           className="text-md  min-[460px]:text-xl"

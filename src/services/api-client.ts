@@ -38,8 +38,14 @@ class APIclient {
   };
 
   update = (id: string, data: string) => {
-    return AxiosInstance.put(`${id}`, {
+    return AxiosInstance.put(`/update/${id}`, {
       data: data,
+    });
+  };
+
+  complete = (id: string, completed: boolean) => {
+    return AxiosInstance.put(`/complete/${id}`, {
+      data: completed,
     });
   };
 
