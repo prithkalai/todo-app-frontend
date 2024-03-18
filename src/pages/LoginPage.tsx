@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import apiGuest from "@/services/api-guest";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -28,6 +28,15 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+
+    if (token != undefined) {
+      navigate("/");
+    }
+  }, []);
+
   const formSchema = z.object({
     email: z.string().email("Enter a valid email").min(3, "Email is required"),
     password: z.string().min(1, "Password is required."),
