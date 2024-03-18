@@ -20,16 +20,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 interface Props {
   todos: Todo[];
-  deleteTodo: Dispatch<SetStateAction<Todo[]>>;
+  setTodos: Dispatch<SetStateAction<Todo[]>>;
   editTodos: (updatedTodo: Todo) => void;
 }
 
-const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
+const TaskList = ({ todos, setTodos, editTodos }: Props) => {
   const { toast } = useToast();
   const [deleteLoading, setDeleteLoading] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [checkedStates, setCheckedStates] = useState<{
     [key: string]: boolean;
   }>({});
 
@@ -40,7 +37,7 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
       .then(() => {
         let newTodos = [...todos];
         newTodos = newTodos.filter((todo) => todo._id !== id);
-        updateTodos(newTodos);
+        setTodos(newTodos);
         toast({
           title: "Success",
           description: "New task added.",
@@ -67,11 +64,6 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
 
     const newState = isChecked ?? false;
 
-    setCheckedStates((prevstates) => ({
-      ...prevstates,
-      [id]: newState,
-    }));
-
     apiClient
       .complete(id, newState)
       .then((res) => {
@@ -80,6 +72,10 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
           title: "Success",
           description: "Task Completion Updated",
         });
+        let newTodos = [...todos];
+        const index = newTodos.findIndex((todo) => todo._id === id);
+        newTodos[index].completed = newState;
+        setTodos(newTodos);
       })
       .catch((err) => {
         toast({
@@ -87,10 +83,6 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
           title: err.response ? err.response.data : err.message,
           description: err.response ? err.message : "Server Not Reachable",
         });
-        setCheckedStates((prevstates) => ({
-          ...prevstates,
-          [id]: !newState,
-        }));
       });
 
     // Move checked states to the bottom
@@ -111,7 +103,7 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
               <TableRow key={todo._id}>
                 <TableCell>
                   <Checkbox
-                    checked={!!checkedStates[todo._id]}
+                    checked={todo.completed}
                     onCheckedChange={(isChecked) =>
                       handleCheckState(todo._id, isChecked)
                     }
@@ -119,7 +111,7 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
                 </TableCell>
                 <TableCell
                   className={
-                    !checkedStates[todo._id]
+                    !todo.completed
                       ? "text-md  min-[460px]:text-xl font-poppins"
                       : "text-md  min-[460px]:text-xl font-poppins line-through"
                   }

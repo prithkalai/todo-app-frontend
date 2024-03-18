@@ -52,7 +52,7 @@ const HomePage = () => {
     <>
       <div className="h-fit w-full mt-10 pl-5 pr-5 flex items-start justify-around gap-10">
         <AddTaskFormDesktop updateTodos={updateTodos} />
-        <TaskList todos={todos} deleteTodo={setTodos} editTodos={editTodos} />
+        <TaskList todos={todos} setTodos={setTodos} editTodos={editTodos} />
       </div>
 
       <Drawer>

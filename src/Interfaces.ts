@@ -1,6 +1,7 @@
 export interface Todo {
   _id: string;
   data: string;
+  completed: boolean;
 }
 
 export interface Login {
