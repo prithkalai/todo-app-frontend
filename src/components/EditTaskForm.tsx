@@ -12,8 +12,10 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import apiClient from "@/services/api-client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import ButtonLoading from "./ButtonLoading";
 
 interface Props {
   updateTodos: (newTodo: Todo) => void;
@@ -21,6 +23,7 @@ interface Props {
 }
 
 const EditTaskForm = ({ id, updateTodos }: Props) => {
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const formSchema = z.object({
     data: z.string().min(3, "Task is required."),
@@ -34,10 +37,11 @@ const EditTaskForm = ({ id, updateTodos }: Props) => {
   });
 
   function onSubmit(formData: z.infer<typeof formSchema>) {
+    setLoading(true);
     apiClient
       .update(id, formData.data)
       .then((res) => {
-        console.log(res);
+        setLoading(false);
 
         updateTodos(res.data.data);
         toast({
@@ -47,6 +51,7 @@ const EditTaskForm = ({ id, updateTodos }: Props) => {
         form.reset();
       })
       .catch((err) => {
+        setLoading(false);
         toast({
           variant: "destructive",
           title: err.response ? err.response.data : err.message,
@@ -83,7 +88,11 @@ const EditTaskForm = ({ id, updateTodos }: Props) => {
               )}
             />
             <div className="w-full flex justify-center">
-              <Button type="submit">Update</Button>
+              {!loading ? (
+                <Button type="submit">Update</Button>
+              ) : (
+                <ButtonLoading />
+              )}
             </div>
           </form>
         </CardContent>

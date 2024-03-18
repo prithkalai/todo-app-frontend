@@ -1,3 +1,4 @@
+import ButtonLoading from "@/components/ButtonLoading";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,11 +19,13 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import apiGuest from "@/services/api-guest";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 const LoginPage = () => {
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const formSchema = z.object({
@@ -39,13 +42,16 @@ const LoginPage = () => {
   });
 
   function onSubmit(formData: z.infer<typeof formSchema>) {
+    setLoading(true);
     apiGuest
       .login(formData.email, formData.password)
       .then((res) => {
         localStorage.setItem("authToken", res.data.token);
+        setLoading(false);
         navigate("/");
       })
       .catch((err) => {
+        setLoading(false);
         toast({
           variant: "destructive",
           title: err.response ? err.response.data.message : err.message,
@@ -102,7 +108,11 @@ const LoginPage = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit">Submit</Button>
+                {!loading ? (
+                  <Button type="submit">Submit</Button>
+                ) : (
+                  <ButtonLoading />
+                )}
               </form>
             </CardContent>
           </Card>
@@ -111,7 +121,7 @@ const LoginPage = () => {
           className="shadow-xl w-full"
           onClick={() => navigate("/signup")}
         >
-          Sign Up
+          Create an account
         </Button>
       </div>
     </div>

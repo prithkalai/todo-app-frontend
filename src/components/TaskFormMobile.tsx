@@ -21,12 +21,15 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "./ui/drawer";
+import ButtonLoading from "./ButtonLoading";
+import { useState } from "react";
 
 interface Props {
   updateTodos: (newTodos: Todo) => void;
 }
 
 const AddTaskFormMobile = ({ updateTodos }: Props) => {
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const formSchema = z.object({
     data: z.string().min(3, "Task is required."),
@@ -40,9 +43,11 @@ const AddTaskFormMobile = ({ updateTodos }: Props) => {
   });
 
   function onSubmit(formData: z.infer<typeof formSchema>) {
+    setLoading(true);
     apiClient
       .create(formData.data)
       .then((res) => {
+        setLoading(false);
         updateTodos(res.data);
         toast({
           title: "Success",
@@ -51,6 +56,7 @@ const AddTaskFormMobile = ({ updateTodos }: Props) => {
         form.reset();
       })
       .catch((err) => {
+        setLoading(false);
         toast({
           variant: "destructive",
           title: err.response ? err.response.data : err.message,
@@ -91,7 +97,11 @@ const AddTaskFormMobile = ({ updateTodos }: Props) => {
               )}
             />
             <div className="w-full flex justify-center">
-              <Button type="submit">Add</Button>
+              {!loading ? (
+                <Button type="submit">Add</Button>
+              ) : (
+                <ButtonLoading />
+              )}
             </div>
             <DrawerFooter>
               <DrawerClose>

@@ -1,3 +1,4 @@
+import ButtonLoading from "@/components/ButtonLoading";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,11 +19,13 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import apiGuest from "@/services/api-guest";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 const SignupPage = () => {
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const formSchema = z.object({
@@ -43,19 +46,22 @@ const SignupPage = () => {
   function onSubmit(formData: z.infer<typeof formSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
+    setLoading(true);
     apiGuest
       .signup(formData.name, formData.email, formData.password)
       .then((res) => {
         localStorage.setItem("authToken", res.data.token);
+        setLoading(false);
         navigate("/");
       })
-      .catch((err) =>
+      .catch((err) => {
+        setLoading(false);
         toast({
           variant: "destructive",
           title: err.response ? err.response.data.message : err.message,
           description: err.response ? err.message : "Server Not Reachable",
-        })
-      );
+        });
+      });
   }
 
   return (
@@ -116,13 +122,17 @@ const SignupPage = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit">Submit</Button>
+                {!loading ? (
+                  <Button type="submit">Submit</Button>
+                ) : (
+                  <ButtonLoading />
+                )}
               </form>
             </CardContent>
           </Card>
         </Form>
         <Button className="shadow-xl w-full" onClick={() => navigate("/login")}>
-          Login
+          Login to your account
         </Button>
       </div>
     </div>

@@ -13,8 +13,9 @@ import {
 import { Todo } from "@/Interfaces";
 import apiClient from "@/services/api-client";
 import { useToast } from "./ui/use-toast";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import EditTaskForm from "./EditTaskForm";
+import ButtonLoading from "./ButtonLoading";
 
 interface Props {
   todos: Todo[];
@@ -24,13 +25,16 @@ interface Props {
 
 const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
   const deleteTask = (id: string) => {
+    setLoading(true);
     apiClient
       .delete(id)
       .then(() => {
         let newTodos = [...todos];
         newTodos = newTodos.filter((todo) => todo._id !== id);
         updateTodos(newTodos);
+        setLoading(false);
       })
       .catch((err) => {
         toast({
@@ -38,7 +42,7 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
           title: err.response ? err.response.data : err.message,
           description: err.response ? err.message : "Server Not Reachable",
         });
-        console.log(err);
+        setLoading(false);
       });
     console.log(id);
   };
@@ -63,7 +67,10 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
                   <div className="flex items-center justify-end gap-2">
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button className="p-2 min-[460px]:p-3">
+                        <Button
+                          className="p-2 min-[460px]:p-3"
+                          variant="outline"
+                        >
                           <RxPencil1 className="text-md  min-[460px]:text-xl" />
                         </Button>
                       </PopoverTrigger>
@@ -71,12 +78,16 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
                         <EditTaskForm id={todo._id} updateTodos={editTodos} />
                       </PopoverContent>
                     </Popover>
-                    <Button className="p-2 min-[460px]:p-3">
-                      <RxTrash
-                        className="text-md  min-[460px]:text-xl"
-                        onClick={() => deleteTask(todo._id)}
-                      />
-                    </Button>
+                    {!loading ? (
+                      <Button className="p-2 min-[460px]:p-3" variant="outline">
+                        <RxTrash
+                          className="text-md  min-[460px]:text-xl"
+                          onClick={() => deleteTask(todo._id)}
+                        />
+                      </Button>
+                    ) : (
+                      <ButtonLoading />
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
