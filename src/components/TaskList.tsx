@@ -44,7 +44,7 @@ const TaskList = ({ todos, deleteTodo: updateTodos, editTodos }: Props) => {
   };
 
   return (
-    <div className=" min-[460px]:w-[600px]">
+    <div className="w-full min-[460px]:w-[600px]">
       <Card className="p-5 shadow-lg">
         <Table>
           <TableCaption>
